@@ -1,26 +1,19 @@
 {
-  "name": "seguidor-solar",
+  "name": "jf",
   "version": "1.0.0",
-  "description": "Código que controla un seguidor solar, y que muestra la posición del Sol, que es obtenida gracias a los datos captados por el seguidor",
+  "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "reset": "firmata-party uno --debug"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/mauricio403/PaginaWebIntegrador.git"
-  },
+  "keywords": [],
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mauricio403/PaginaWebIntegrador/issues"
-  },
-  "homepage": "https://github.com/mauricio403/PaginaWebIntegrador#readme",
   "dependencies": {
-    "bootstrap": "^4.5.3",
     "express": "^4.17.1",
+    "firmata-party": "^2.0.1",
     "johnny-five": "^2.0.0",
-    "nodemon": "^2.0.6",
+    "readline": "^1.3.0",
     "socket.io": "^3.0.4"
   }
 }

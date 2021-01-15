@@ -1,63 +1,46 @@
 const express = require('express');
 const app = express();
 const five = require('johnny-five');
-//app.use(express.static(__dirname + 'public'));
-app.get('/',(req,res)=>{
-  res.sendFile(__dirname+ '/public/index.html');
+
+app.use('/public',express.static('public'));
+app.use(express.static(__dirname+' public'));
+
+app.get('/',function (req,res){
+  res.sendFile();
 })
+
 app.listen(3000,()=>{
   console.log('listening!');
 })
 
+function guardarAngulos (anguloServo) {
+    return anguloServo;
+}
+module.exports = {
+    angulo:guardarAngulos
+}
+
 const board = new five.Board();
 
-board.on('ready', ()=>{
+board.on('ready', function (){
 
-  //Instanciar los servos
-  const servoHorizontal = new five.Servo({
-    pin:10,
-    range:[0,180]
+  const servo1 = new five.Servo({
+    pin:9
   });
-  const servoVertical = new five.Servo({
-    pin:9,
-    range:[0,180]
-  });
-
-
-  //instanciar ldr
-  const ldrTopRight = new five.Sensor('A1');
-  const ldrTopLeft = new five.Sensor('A2');
-  const ldrBottomRight = new five.Sensor('A4');
-  const ldrBottomLeft = new five.Sensor('A3');
-
-  this.loop(1500,()=>{
-    //obtener valores de las ldrs: 0 - 1023
-    let topRight = ldrTopRight.raw;
-    let topLeft = ldrTopLeft.raw;
-    let bottomRight = ldrBottomRight.raw;
-    let bottomLeft = ldrBottomLeft.raw;
-
-    //obtener valores de los servos
-    let gradosServoHorizontal=servoHorizontal.value;
-    let gradosServoVertical=servoVertical.value;
-
-    //valores correspondientes a la suma de cada lado que forman las ldr
-    let sumaTop = topLeft+topRight;
-    let sumaRight = topRight+bottomRight;
-    let sumaBottom = bottomRight+bottomLeft;
-    let sumaLeft = topLeft+bottomLeft;
   
-    //movimientos de los servos
-    if (sumaTop<sumaBottom) {
-      servoVertical.to(gradosServoVertical++);
-    }else if (sumaTop>sumaBottom) {
-      servoVertical.to(gradosServoVertical--);
-    }
+  /*const servo2 = new five.Servo({
+    pin:10
+  });*/
 
-    if (sumaLeft>sumaRight) {
-      servoHorizontal.to(gradosServoHorizontal++);
-    }else if (sumaLeft<sumaRight) {
-      servoHorizontal.to(gradosServoHorizontal--);
-    }
-  })
-})
+  this.repl.inject({
+    servo1,
+  });
+
+  servo1.to(180);
+  guardarAngulos(servo1.value);
+
+});
+
+board.on("error", (err)=>{
+  console.log(err);
+});
