@@ -1,46 +1,52 @@
+const http = require('http');
 const express = require('express');
+const SocketIO = require('socket.io');
+
 const app = express();
+const server = http.createServer(app);
+const io = SocketIO(server);
+
 const five = require('johnny-five');
 
-app.use('/public',express.static('public'));
-app.use(express.static(__dirname+' public'));
+app.use(express.static(__dirname + '/public'));
 
-app.get('/',function (req,res){
-  res.sendFile();
-})
-
-app.listen(3000,()=>{
+server.listen(3000, () => {
   console.log('listening!');
 })
 
-function guardarAngulos (anguloServo) {
-    return anguloServo;
-}
-module.exports = {
-    angulo:guardarAngulos
-}
-
 const board = new five.Board();
 
-board.on('ready', function (){
+board.on('ready', function () {
 
-  const servo1 = new five.Servo({
-    pin:9
+  const servo = new five.Servo({
+    pin: 9
   });
-  
-  /*const servo2 = new five.Servo({
-    pin:10
-  });*/
 
   this.repl.inject({
-    servo1,
+    servo
   });
 
-  servo1.to(180);
-  guardarAngulos(servo1.value);
+  setInterval(() => {
+    io.emit('servo', servo.value);
+  }, 1000);
+
+  let interruptor = true;
+
+  setInterval(function () {
+    if (servo.value < 90) {
+      servo.value++;
+      servo.to(servo.value);
+    } else {
+      servo.value--;
+      servo.to(servo.value);
+    }
+    interruptor = !interruptor;
+    console.log(servo.value)
+    io.emit('servo', servo.value);
+  }, 1000);
 
 });
 
-board.on("error", (err)=>{
+board.on("error", (err) => {
   console.log(err);
 });

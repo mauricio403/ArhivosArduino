@@ -4,7 +4,7 @@
   "description": "Código que controla un seguidor solar, y que muestra la posición del Sol, que es obtenida gracias a los datos captados por el seguidor",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "reset": "firmata-party uno --debug"
   },
   "repository": {
     "type": "git",
@@ -19,8 +19,10 @@
   "dependencies": {
     "bootstrap": "^4.5.3",
     "express": "^4.17.1",
+    "firmata-party": "^2.0.1",
     "johnny-five": "^2.0.0",
     "nodemon": "^2.0.6",
+    "serialport": "^9.0.6",
     "socket.io": "^3.0.4"
   }
 }

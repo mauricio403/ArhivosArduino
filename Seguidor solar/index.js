@@ -1,63 +1,74 @@
+const http = require('http');
 const express = require('express');
-const app = express();
+const SocketIO = require('socket.io');
 const five = require('johnny-five');
-//app.use(express.static(__dirname + 'public'));
-app.get('/',(req,res)=>{
-  res.sendFile(__dirname+ '/public/index.html');
-})
-app.listen(3000,()=>{
-  console.log('listening!');
-})
+
+const app = express();
+const server = http.createServer(app);
+const io = SocketIO(server);
+
+app.use(express.static(__dirname + '/public'));
+
+server.listen(3000, () => {
+  console.log('listening on port 3000!');
+});
 
 const board = new five.Board();
 
-board.on('ready', ()=>{
-
-  //Instanciar los servos
+board.on('ready', function () {
   const servoHorizontal = new five.Servo({
-    pin:10,
-    range:[0,180]
+    pin: 10
   });
+
   const servoVertical = new five.Servo({
-    pin:9,
-    range:[0,180]
+    pin: 9
   });
 
+  this.repl.inject({
+    servoHorizontal
+  });
 
-  //instanciar ldr
   const ldrTopRight = new five.Sensor('A1');
   const ldrTopLeft = new five.Sensor('A2');
-  const ldrBottomRight = new five.Sensor('A4');
+  const ldrBottomRight = new five.Sensor('A0');
   const ldrBottomLeft = new five.Sensor('A3');
 
-  this.loop(1500,()=>{
-    //obtener valores de las ldrs: 0 - 1023
-    let topRight = ldrTopRight.raw;
-    let topLeft = ldrTopLeft.raw;
-    let bottomRight = ldrBottomRight.raw;
-    let bottomLeft = ldrBottomLeft.raw;
+  setInterval(function () {
+    let topRightValue = ldrTopRight.value;
+    let topLeftValue = ldrTopLeft.value;
+    let bottomRightValue = ldrBottomRight.value;
+    let bottomLeftValue = ldrBottomLeft.value;
 
-    //obtener valores de los servos
-    let gradosServoHorizontal=servoHorizontal.value;
-    let gradosServoVertical=servoVertical.value;
+    let gradosServoHorizontal = servoHorizontal.value;
+    let gradosServoVertical = servoVertical.value;
 
-    //valores correspondientes a la suma de cada lado que forman las ldr
-    let sumaTop = topLeft+topRight;
-    let sumaRight = topRight+bottomRight;
-    let sumaBottom = bottomRight+bottomLeft;
-    let sumaLeft = topLeft+bottomLeft;
-  
-    //movimientos de los servos
-    if (sumaTop<sumaBottom) {
-      servoVertical.to(gradosServoVertical++);
-    }else if (sumaTop>sumaBottom) {
-      servoVertical.to(gradosServoVertical--);
+    let avgTop = (topLeftValue + topRightValue) / 2;
+    let avgRight = (topRightValue + bottomRightValue) / 2;
+    let avgBottom = (bottomRightValue + bottomLeftValue) / 2;
+    let avgLeft = (topLeftValue + bottomLeftValue) / 2;
+
+    if (avgTop < avgBottom) {
+      gradosServoVertical++;
+      servoVertical.to(gradosServoVertical);
+    } else if (avgTop > avgBottom) {
+      gradosServoVertical--;
+      servoVertical.to(gradosServoVertical);
+    } else {
+      servoVertical.to(gradosServoVertical);
     }
 
-    if (sumaLeft>sumaRight) {
-      servoHorizontal.to(gradosServoHorizontal++);
-    }else if (sumaLeft<sumaRight) {
-      servoHorizontal.to(gradosServoHorizontal--);
+    if (avgLeft > avgRight) {
+      gradosServoHorizontal++;
+      servoHorizontal.to(gradosServoHorizontal);
+    } else if (avgLeft < avgRight) {
+      gradosServoHorizontal--;
+      servoHorizontal.to(gradosServoHorizontal);
+    } else {
+      servoHorizontal.to(gradosServoHorizontal);
     }
-  })
-})
+
+    io.emit('rotaciones',
+      [gradosServoVertical, gradosServoHorizontal]);
+
+  }, 1000);
+});
