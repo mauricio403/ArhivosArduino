@@ -16,6 +16,8 @@ server.listen(3000, () => {
 
 const board = new five.Board();
 
+let data = {};
+
 board.on('ready', function () {
 
   const servo = new five.Servo({
@@ -26,24 +28,25 @@ board.on('ready', function () {
     servo
   });
 
-  setInterval(() => {
-    io.emit('servo', servo.value);
-  }, 1000);
+  // setInterval(() => {
+  //   io.emit('servo', servo.value);
+  //   // console.log(servo.value);
+  // }, 1000);
 
   let interruptor = true;
 
   setInterval(function () {
-    if (servo.value < 90) {
-      servo.value++;
-      servo.to(servo.value);
-    } else {
-      servo.value--;
-      servo.to(servo.value);
+
+    if (interruptor) {
+      servo.to(0);
+      data.message = 'Servo en ' + servo.value;
     }
+    servo.to(180);
+    data.grados = servo.value;
     interruptor = !interruptor;
-    console.log(servo.value)
-    io.emit('servo', servo.value);
-  }, 1000);
+    // console.log(servo.value)
+    io.emit('servo', data);
+  }, 2000);
 
 });
 
